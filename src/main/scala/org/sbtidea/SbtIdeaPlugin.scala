@@ -174,7 +174,9 @@ object SbtIdeaPlugin extends Plugin {
         val managedSourceRoots = settings.setting(Keys.managedSourceDirectories in config, "Missing managed source directories!")
         val sourceManaged = settings.setting(Keys.sourceManaged in config, "Missing 'sourceManaged'")
         def listSubdirectories(f: File) = Option(f.listFiles()).map(_.toSeq.filter(_.isDirectory)).getOrElse(Seq.empty[File])
-        (listSubdirectories(sourceManaged) ++ managedSourceRoots).distinct
+        def parents(f:File):List[File] = f :: Option(f.getParentFile).toList.flatMap(parents)
+        def inManagedSubdirectory(f:File) = parents(f).exists(managedSourceRoots.contains)
+        (listSubdirectories(sourceManaged).filterNot(inManagedSubdirectory) ++ managedSourceRoots).distinct
       }
       else Seq.empty[File]
 
